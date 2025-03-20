@@ -30,3 +30,14 @@
     position: relative; 
     z-index: 1;
   }
+
+  .card-fixo {
+    min-height: 14rem;
+  }
+  
+  .descricao-limitada {
+    white-space: wrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
