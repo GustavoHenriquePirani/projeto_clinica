@@ -1,17 +1,15 @@
 import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../../config/connection";
 
-class Medico extends Model {
+class User extends Model {
   public id!: number;
   public name!: string;
   public email!: string;
   public password!: string;
-  public crm!: string;
-  public descricao?: string | null;
-  public fotoPerfil?: Buffer | null;
+  public admin!: boolean;
 }
 
-Medico.init(
+User.init(
   {
     id: {
       type: DataTypes.INTEGER,
@@ -27,24 +25,19 @@ Medico.init(
       allowNull: false,
       unique: true,
     },
-    crm: {
+    password: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
     },
-    descricao: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    fotoPerfil: {
-      type: DataTypes.BLOB,
-      allowNull: true,
-    },
+    admin: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    }
   },
   {
     sequelize,
-    tableName: "Medico",
+    tableName: "User",
   }
 );
 
-export default Medico;
+export default User;

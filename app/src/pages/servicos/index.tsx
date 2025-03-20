@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Container, Row, Col, Card, Spinner } from "react-bootstrap";
 import "../../pages/global.css"
+import "./index.css"
 
 interface Servico {
   id: number;
@@ -17,7 +18,7 @@ export const Servicos = () => {
   useEffect(() => {
     const fetchServicos = async () => {
       try {
-        const response = await fetch("http://localhost:3000/clinica/servicos");
+        const response = await fetch("http://localhost:8000/clinica/servicos");
         const data = await response.json();
         setServicos(data);
       } catch (error) {
@@ -31,9 +32,12 @@ export const Servicos = () => {
   }, []);
 
   return (
-    <Container className="container mt-4">
-      <h2 className="text-center mb-4">Nossos Serviços</h2>
-
+    <Container className="container">
+      <Row className="bg-img-servico text-center">
+        <Col>
+          <h1 className="fs-1">Nossos Serviços</h1>
+        </Col>
+      </Row>
       {loading ? (
         <div className="text-center">
           <Spinner animation="border" />
@@ -41,7 +45,7 @@ export const Servicos = () => {
       ) : (
         <Row>
           {servicos.map((servico) => (
-            <Col key={servico.id} xs={12} md={6} lg={4} className="mb-4">
+            <Col key={servico.id} xs={12} md={6} lg={4} className="mb-4 text-center">
               <Card className="shadow-sm">
                 <Card.Body>
                   <Card.Title>{servico.name}</Card.Title>

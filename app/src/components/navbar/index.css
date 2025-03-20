@@ -21,3 +21,7 @@
     color: #00bfff !important; 
   }
   
+  .navbar-nav .nav-link.active-link {
+    color: #00bfff !important; 
+    font-weight: bold;
+  }

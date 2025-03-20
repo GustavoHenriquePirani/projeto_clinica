@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import medicoRoutes from "./modules/medico/medicoRoutes";
 import servicosRoutes from "./modules/servicos/servicosRoutes";
+import userRoutes from "./modules/user/userRoutes";
 import { sequelize } from "./config/connection";
 
 const app = express();
@@ -23,6 +24,8 @@ const startServer = async () => {
 
     app.use("/clinica", medicoRoutes);
     app.use("/clinica", servicosRoutes);
+    app.use("/clinica", userRoutes);
+
 
     const PORT = 8000;
     app.listen(PORT, () => {
