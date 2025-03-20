@@ -22,6 +22,12 @@ export const createMedico = async (
       const { name, email, crm, descricao } = req.body;
       const fotoPerfil = req.file ? req.file.buffer : null;
 
+      const medicoExistente = await Medico.findOne({ where: { crm } });
+      if (medicoExistente) {
+        res.status(400).json({ message: "Já existe um médico com esse CRM." });
+        return;
+      }
+
       const newMedico = await Medico.create({
         name,
         email,
@@ -89,7 +95,7 @@ export const updateMedico = async (
 
       const { name, email, crm, descricao } = req.body;
       const fotoPerfil = req.file ? req.file.buffer : medico.fotoPerfil;
-    
+
       await medico.update({
         name,
         email,
@@ -125,7 +131,10 @@ export const deleteMedico = async (
 };
 
 // Rota para obter a imagem do médico
-export const getFotoPerfil = async (req: Request, res: Response): Promise<void> => {
+export const getFotoPerfil = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const medico = await Medico.findByPk(Number(req.params.id), {
       attributes: ["fotoPerfil"],
@@ -135,9 +144,11 @@ export const getFotoPerfil = async (req: Request, res: Response): Promise<void> 
       res.status(404).json({ message: "Imagem não encontrada" });
       return;
     }
-    const imageBuffer = Buffer.isBuffer(medico.fotoPerfil) ? medico.fotoPerfil : Buffer.from(medico.fotoPerfil);
+    const imageBuffer = Buffer.isBuffer(medico.fotoPerfil)
+      ? medico.fotoPerfil
+      : Buffer.from(medico.fotoPerfil);
 
-    res.setHeader("Content-Type", "image/png"); 
+    res.setHeader("Content-Type", "image/png");
 
     res.send(imageBuffer);
   } catch (error) {
@@ -145,4 +156,3 @@ export const getFotoPerfil = async (req: Request, res: Response): Promise<void> 
     res.status(500).json({ message: "Erro ao buscar imagem do médico" });
   }
 };
-

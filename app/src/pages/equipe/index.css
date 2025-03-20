@@ -1,57 +1,56 @@
 .bg-img-equipe {
-    position: relative; 
-    background: url("../../../public/imagens/equipe.jpg") no-repeat center/cover;
-    height: 22rem; 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white; 
-    border-radius: 10px;
-    font-size: 2rem;
-    font-weight: bold;
-    letter-spacing: 0.2rem;
-    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7); 
-    margin-bottom: 1.5rem;
+  position: relative;
+  background: url("../../../public/imagens/equipe.jpg") no-repeat center/cover;
+  height: 22rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  border-radius: 10px;
+  font-size: 2rem;
+  font-weight: bold;
+  letter-spacing: 0.2rem;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+  margin-bottom: 1.5rem;
 }
-  
-  .bg-img-equipe::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.4); 
-    border-bottom-right-radius: 10px; 
-    border-bottom-left-radius: 10px; 
-  }
-  
-  .bg-img-equipe h1 {
-    position: relative; 
-    z-index: 1;
-  }
 
-  .foto-perfil {
-    height: 20rem; 
-    width: 10rem;
-    object-fit: cover;
-    object-position: top;
-  }
-  
-  .sem-foto {
-    height: 20rem; 
-    width: 10rem;
-    background: url("../../../public/imagens/avatar.png") no-repeat center/cover;
-    object-fit: cover;
-    object-position: top;
-  }
-  
-  .nome-medico {
-    font-size: 1.4rem;
-    font-weight: bold;
-  }
-  
-  .info-medico {
-    font-size: 1rem;
-  }
-  
+.bg-img-equipe::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border-bottom-right-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+
+.bg-img-equipe h1 {
+  position: relative;
+  z-index: 1;
+}
+
+.foto-perfil {
+  height: 20rem;
+  width: 10rem;
+  object-fit: cover;
+  object-position: top;
+}
+
+.sem-foto {
+  height: 20rem;
+  width: 10rem;
+  background: url("../../../public/imagens/avatar.png") no-repeat center/cover;
+  object-fit: cover;
+  object-position: top;
+}
+
+.nome-medico {
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+.info-medico {
+  font-size: 1rem;
+}
