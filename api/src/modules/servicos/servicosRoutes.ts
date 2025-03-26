@@ -9,10 +9,10 @@ import {
 
 const router = Router();
 
-router.get("/servicos", findAllServicos);
-router.get("/servicos/:id", findServicoById);
-router.post("/servicos", createServico);
-router.put("/servicos/:id", updateServico);
-router.delete("/servicos/:id", deleteServico);
+router.get("/servicos/listar", findAllServicos);
+router.get("/servicos/listar/:id", findServicoById);
+router.post("/servicos/criar", createServico);
+router.put("/servicos/editar/:id", updateServico);
+router.delete("/servicos/deletar/:id", deleteServico);
 
 export default router;

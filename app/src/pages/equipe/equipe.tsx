@@ -1,107 +1,3 @@
-// import { useEffect, useState } from "react";
-// import { Container, Row, Col, Card, Spinner } from "react-bootstrap";
-// import "../../pages/global.css";
-// import "./index.css";
-
-// interface Medico {
-//   id: number;
-//   name: string;
-//   crm: string;
-//   email: String;
-//   descricao: string;
-//   fotoPerfil: Blob;
-// }
-
-// export const Equipe = () => {
-//   const [medicos, setMedicos] = useState<Medico[]>([]);
-//   const [imagens, setImagens] = useState<{ [key: number]: string }>({});
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     const fetchMedicos = async () => {
-//       try {
-//         const response = await fetch("http://localhost:8000/clinica/medicos");
-//         const data = await response.json();
-//         setMedicos(data);
-//         const novasImagens: { [key: number]: string } = {};
-//         await Promise.all(
-//           data.map(async (medico: Medico) => {
-//             try {
-//               const imagemResponse = await fetch(
-//                 `http://localhost:8000/clinica/medicos/${medico.id}/foto`
-//               );
-//               if (imagemResponse.ok) {
-//                 const blob = await imagemResponse.blob();
-//                 novasImagens[medico.id] = URL.createObjectURL(blob);
-//               }
-//             } catch (error) {
-//               console.error(
-//                 `Erro ao carregar imagem do médico ${medico.id}:`,
-//                 error
-//               );
-//             }
-//           })
-//         );
-
-//         setImagens(novasImagens);
-//       } catch (error) {
-//         console.error("Erro ao buscar os médicos:", error);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchMedicos();
-//   }, []);
-
-//   return (
-//     <Container className="container">
-//       <Row className="bg-img-equipe text-center">
-//         <Col>
-//           <h1 className="fs-1">Nossa Equipe</h1>
-//         </Col>
-//       </Row>
-
-//       {loading ? (
-//         <div className="text-center">
-//           <Spinner animation="border" />
-//         </div>
-//       ) : (
-//         <Row>
-//           {medicos.map((medico) => (
-//             <Col key={medico.id} md={4} className="mb-4">
-//               <Card className="shadow text-center">
-//                 {imagens[medico.id] ? (
-//                   <Card.Img
-//                     src={imagens[medico.id]}
-//                     alt={`Foto de ${medico.name}`}
-//                     className="foto-perfil"
-//                   />
-//                 ) : (
-//                   <Card.Img
-//                     src="/imagens/avatar.png"
-//                     alt={`Foto de ${medico.name}`}
-//                     className="foto-perfil"
-//                   />
-//                 )}
-//                 <Card.Body>
-//                   <Card.Title className="nome-medico">{medico.name}</Card.Title>
-//                   <Card.Subtitle className="info-medico">
-//                     CRM: {medico.crm}
-//                   </Card.Subtitle>
-//                   <Card.Text className="info-medico text-muted">
-//                     {medico.descricao}
-//                   </Card.Text>
-//                 </Card.Body>
-//               </Card>
-//             </Col>
-//           ))}
-//         </Row>
-//       )}
-//     </Container>
-//   );
-// };
-
 import { useEffect, useState } from "react";
 import {
   Container,
@@ -114,7 +10,7 @@ import {
   Spinner,
 } from "react-bootstrap";
 import "../../pages/global.css";
-import "./index.css";
+import "./equipe.css";
 
 interface Medico {
   id: number;
@@ -131,6 +27,7 @@ export const Equipe = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Medico | null>(null);
+  const [editEquipe, setEditEquipe] = useState<number | null>(null);
   const [novoMedico, setNovoMedico] = useState<Medico>({
     id: 0,
     name: "",
@@ -146,7 +43,9 @@ export const Equipe = () => {
   const fetchMedicos = async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:8000/clinica/medicos");
+      const response = await fetch(
+        "http://localhost:8000/clinica/medicos/listar"
+      );
       const data = await response.json();
       setMedicos(data);
       const novasImagens: { [key: number]: string } = {};
@@ -162,7 +61,6 @@ export const Equipe = () => {
           }
         })
       );
-
       setImagens(novasImagens);
     } catch (error) {
       console.error("Erro ao buscar os médicos:", error);
@@ -171,54 +69,13 @@ export const Equipe = () => {
     }
   };
 
-  // const handleSave = async () => {
-  //   if (
-  //     !novoMedico.name ||
-  //     !novoMedico.crm ||
-  //     !novoMedico.email ||
-  //     !novoMedico.descricao
-  //   ) {
-  //     alert("Todos os campos são obrigatórios!");
-  //     return;
-  //   }
-
-  //   setLoading(true);
-  //   const method = editing ? "PUT" : "POST";
-  //   const url = editing
-  //     ? `http://localhost:8000/clinica/medicos/${editing.id}`
-  //     : "http://localhost:8000/clinica/medicos";
-
-  //   try {
-  //     await fetch(url, {
-  //       method,
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(novoMedico),
-  //     });
-  //     fetchMedicos();
-  //     setShowModal(false);
-  //   } catch (error) {
-  //     console.error("Erro ao salvar médico:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const handleSave = async () => {
-    if (
-      !novoMedico.name ||
-      !novoMedico.crm ||
-      !novoMedico.email ||
-      !novoMedico.descricao
-    ) {
-      alert("Todos os campos são obrigatórios!");
-      return;
-    }
-
+    if (!isValidMedico(novoMedico)) return;
     setLoading(true);
     const method = editing ? "PUT" : "POST";
     const url = editing
-      ? `http://localhost:8000/clinica/medicos/${editing.id}`
-      : "http://localhost:8000/clinica/medicos";
+      ? `http://localhost:8000/clinica/medicos/editar/${editing.id}`
+      : "http://localhost:8000/clinica/medicos/criar";
 
     const formData = new FormData();
     formData.append("name", novoMedico.name);
@@ -232,7 +89,6 @@ export const Equipe = () => {
     try {
       await fetch(url, {
         method,
-        // Note que não precisamos definir Content-Type; o navegador adiciona o boundary automaticamente.
         body: formData,
       });
       fetchMedicos();
@@ -248,7 +104,7 @@ export const Equipe = () => {
     if (!window.confirm("Tem certeza que deseja remover este médico?")) return;
     setLoading(true);
     try {
-      await fetch(`http://localhost:8000/clinica/medicos/${id}`, {
+      await fetch(`http://localhost:8000/clinica/medicos/deletar/${id}`, {
         method: "DELETE",
       });
       fetchMedicos();
@@ -262,7 +118,6 @@ export const Equipe = () => {
   const getPreviewSrc = (foto: Blob | string | undefined) => {
     if (!foto) return "";
     if (typeof foto === "string") return foto;
-    // Verifica se foto tem propriedade 'size', que indica ser um Blob ou File
     if (typeof (foto as Blob).size === "number") {
       try {
         return URL.createObjectURL(foto as Blob);
@@ -274,6 +129,15 @@ export const Equipe = () => {
     return "";
   };
 
+  const isValidMedico = (medico: Medico) => {
+    return (
+      novoMedico.name.trim() !== "" &&
+      novoMedico.crm.trim() !== "" &&
+      novoMedico.email.trim() !== "" &&
+      novoMedico.descricao.trim() !== ""
+    );
+  };
+
   return (
     <Container>
       <Row className="bg-img-equipe text-center">
@@ -283,6 +147,7 @@ export const Equipe = () => {
       </Row>
 
       <Button
+        variant="success"
         onClick={() => {
           setShowModal(true);
           setEditing(null);
@@ -299,36 +164,46 @@ export const Equipe = () => {
       ) : (
         <Row className="pt-3">
           {medicos.map((medico) => (
-            <Col key={medico.id} md={4} className="mb-4">
-              <Card className="shadow text-center">
+            <Col key={medico.id} xs={12} md={6} lg={4} className="mb-4">
+              <Card
+                className="shadow text-center cartao-equipe"
+                onClick={() => setEditEquipe(medico.id)}
+                onMouseLeave={() => setEditEquipe(null)}
+              >
                 <Card.Img
                   src={imagens[medico.id] || "/imagens/avatar.png"}
                   className="foto-perfil"
                 />
                 <Card.Body>
-                  <Card.Title>{medico.name}</Card.Title>
+                  <Card.Title className="titulo-limitado">
+                    {medico.name}
+                  </Card.Title>
                   <Card.Subtitle>CRM: {medico.crm}</Card.Subtitle>
                   <Card.Text className="text-muted">
                     {medico.descricao}
                   </Card.Text>
-                  <Button
-                    className="me-2"
-                    variant="warning"
-                    onClick={() => {
-                      setEditing(medico);
-                      setNovoMedico(medico);
-                      setShowModal(true);
-                    }}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    className="ms-2"
-                    variant="danger"
-                    onClick={() => handleDelete(medico.id)}
-                  >
-                    Remover
-                  </Button>
+                  {editEquipe === medico.id && (
+                    <div className="position-absolute top-0 end-0 m-2">
+                      <Button
+                        className="me-2"
+                        variant="warning"
+                        onClick={() => {
+                          setEditing(medico);
+                          setNovoMedico(medico);
+                          setShowModal(true);
+                        }}
+                      >
+                        ✏️ Editar
+                      </Button>
+                      <Button
+                        className="ms-2"
+                        variant="danger"
+                        onClick={() => handleDelete(medico.id)}
+                      >
+                        🗑️ Excluir
+                      </Button>
+                    </div>
+                  )}
                 </Card.Body>
               </Card>
             </Col>
@@ -353,8 +228,9 @@ export const Equipe = () => {
                   setNovoMedico({ ...novoMedico, name: e.target.value })
                 }
               />
+              <span className="obrigatorio">Campo obrigatório*</span>
             </Form.Group>
-            <Form.Group>
+            <Form.Group className="mt-3">
               <Form.Label>CRM</Form.Label>
               <Form.Control
                 type="text"
@@ -363,8 +239,9 @@ export const Equipe = () => {
                   setNovoMedico({ ...novoMedico, crm: e.target.value })
                 }
               />
+              <span className="obrigatorio">Campo obrigatório*</span>
             </Form.Group>
-            <Form.Group>
+            <Form.Group className="mt-3">
               <Form.Label>Email</Form.Label>
               <Form.Control
                 type="email"
@@ -373,8 +250,9 @@ export const Equipe = () => {
                   setNovoMedico({ ...novoMedico, email: e.target.value })
                 }
               />
+              <span className="obrigatorio">Campo obrigatório*</span>
             </Form.Group>
-            <Form.Group>
+            <Form.Group className="mt-3">
               <Form.Label>Descrição</Form.Label>
               <Form.Control
                 as="textarea"
@@ -383,8 +261,9 @@ export const Equipe = () => {
                   setNovoMedico({ ...novoMedico, descricao: e.target.value })
                 }
               />
+              <span className="obrigatorio">Campo obrigatório*</span>
             </Form.Group>
-            <Form.Group>
+            <Form.Group className="mt-3">
               <Form.Label>Foto de Perfil</Form.Label>
               <Form.Control
                 type="file"
@@ -420,12 +299,7 @@ export const Equipe = () => {
           <Button
             variant="success"
             onClick={handleSave}
-            disabled={
-              !novoMedico.name ||
-              !novoMedico.crm ||
-              !novoMedico.email ||
-              !novoMedico.descricao
-            }
+            disabled={!isValidMedico(novoMedico) || loading}
           >
             {editing ? "Salvar" : "Adicionar"}
           </Button>

@@ -1,22 +1,23 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import React from "react";
+import ReactDOM from "react-dom/client";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import './index.css';
+import "./index.css";
 // import App from './App';
-import {Home} from '../src/pages/home/index'
-import {Equipe} from '../src/pages/equipe/index'
-import {Servicos} from "../src/pages/servicos/index"
-import {CustomNavbar} from "./components/navbar/index"
-import {Login} from "./pages/login/index"
-import reportWebVitals from './reportWebVitals';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { CustomNavbar } from "./components/navbar/index";
+import { Servicos } from "./pages/servicos/servicos";
+// import { Login } from "./pages/login/login";
+import { Equipe } from "./pages/equipe/equipe";
+import { Home } from "./pages/home/home";
+
+import reportWebVitals from "./reportWebVitals";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
+  document.getElementById("root") as HTMLElement
 );
 root.render(
   <React.StrictMode>
-     <Router>
+    <Router>
       <CustomNavbar />
       <Routes>
         <Route path="/" element={<Home />} />

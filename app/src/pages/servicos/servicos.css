@@ -1,0 +1,106 @@
+.bg-img-servico {
+  position: relative;
+  background: url("../../../public/imagens/servicos.jpg") no-repeat center/cover;
+  height: 20rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  border-radius: 10px;
+  font-size: 2rem;
+  font-weight: bold;
+  letter-spacing: 0.2rem;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+  margin-bottom: 1.5rem;
+}
+
+.bg-img-servico::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border-bottom-right-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+
+.bg-img-servico h1 {
+  position: relative;
+  z-index: 1;
+}
+
+.cartao-servico {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1rem 0 0 0.5rem;
+  border-radius: 10px;
+}
+
+.cartao-servico:hover {
+  box-shadow: 0 0 10px 5px rgba(0, 64, 128, 0.3);
+}
+
+.cartao-servico .card-title {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #333;
+  text-align: center;
+}
+
+.cartao-servico .card-text {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.descricao-limitada {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 3rem;
+}
+
+.cartao-servico p {
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.cartao-servico .button-container {
+  margin-top: auto;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cartao-servico button {
+  margin-left: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.obrigatorio {
+  color: darkred;
+  font-size: 0.7rem;
+  font-weight: semibold;
+}
+
+.modal-header {
+  background-color: #004080;
+  color: white;
+}
+
+.titulo-limitado {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 2.8rem;
+  word-wrap: break-word;
+  white-space: normal;
+}
