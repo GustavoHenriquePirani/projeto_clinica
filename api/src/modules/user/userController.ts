@@ -7,16 +7,16 @@ export const createUser = async (
   res: Response
 ): Promise<void> => {
   try {
-      const { name, email, password} = req.body;
-      const hashedPassword = await bcrypt.hash(password, 10);
+    const { name, email, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-      const newUser = await User.create({
-        name,
-        email,
-        password: hashedPassword,
-      });
+    const newUser = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+    });
 
-      res.status(201).json(newUser);
+    res.status(201).json(newUser);
   } catch (error) {
     res.status(500).json({ message: "Erro ao criar usuarios", error });
   }
@@ -33,7 +33,6 @@ export const findAllUser = async (
     res.status(500).json({ message: "Erro ao listar os usuarios", error });
   }
 };
-
 
 export const findUserById = async (
   req: Request,
@@ -72,7 +71,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     }
     res.status(200).json({ message: "Login realizado com sucesso!" });
   } catch (error) {
-    console.error("Erro ao processar login:", error); 
+    console.error("Erro ao processar login:", error);
     res.status(500).json({ message: "Erro ao processar login.", error });
   }
 };
@@ -82,24 +81,24 @@ export const updateUser = async (
   res: Response
 ): Promise<void> => {
   try {
-      const user = await User.findByPk(Number(req.params.id));
-      if (!user) {
-        res.status(404).json({ message: "Usuario não encontrado" });
-        return;
-      }
+    const user = await User.findByPk(Number(req.params.id));
+    if (!user) {
+      res.status(404).json({ message: "Usuario não encontrado" });
+      return;
+    }
 
-      const { name, email, password} = req.body;
-      const hashedPassword = password
-        ? await bcrypt.hash(password, 10)
-        : user.password;
+    const { name, email, password } = req.body;
+    const hashedPassword = password
+      ? await bcrypt.hash(password, 10)
+      : user.password;
 
-      await user.update({
-        name,
-        email,
-        password: hashedPassword,
-      });
+    await user.update({
+      name,
+      email,
+      password: hashedPassword,
+    });
 
-      res.status(200).json(user);
+    res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ message: "Erro ao atualizar médico", error });
   }

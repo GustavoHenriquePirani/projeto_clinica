@@ -26,6 +26,8 @@ export const Servicos = () => {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Servico | null>(null);
   const [editService, setEditService] = useState<number | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [novoServico, setNovoServico] = useState<Servico>({
     id: 0,
     name: "",
@@ -95,28 +97,33 @@ export const Servicos = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm("Tem certeza que deseja excluir este serviço?")) return;
+  // const handleDelete = async (id: number) => {
+  //   if (!window.confirm("Tem certeza que deseja excluir este serviço?")) return;
 
-    setLoading(true);
-    try {
-      const response = await fetch(
-        `http://localhost:8000/clinica/servicos/deletar/${id}`,
-        {
-          method: "DELETE",
-        }
-      );
+  //   setLoading(true);
+  //   try {
+  //     const response = await fetch(
+  //       `http://localhost:8000/clinica/servicos/deletar/${id}`,
+  //       {
+  //         method: "DELETE",
+  //       }
+  //     );
 
-      if (response.ok) {
-        setServicos((prev) => prev.filter((servico) => servico.id !== id));
-      } else {
-        console.error("Erro ao excluir serviço.");
-      }
-    } catch (error) {
-      console.error("Erro ao excluir serviço:", error);
-    } finally {
-      setLoading(false);
-    }
+  //     if (response.ok) {
+  //       setServicos((prev) => prev.filter((servico) => servico.id !== id));
+  //     } else {
+  //       console.error("Erro ao excluir serviço.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Erro ao excluir serviço:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const handleDelete = (id: number) => {
+    setSelectedId(id);
+    setShowDeleteConfirm(true);
   };
 
   const isValidServico = (servico: Servico) => {
@@ -284,6 +291,50 @@ export const Servicos = () => {
             disabled={!isValidServico(novoServico) || loading}
           >
             Salvar
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal
+        show={showDeleteConfirm}
+        onHide={() => setShowDeleteConfirm(false)}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Confirmar Exclusão</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>Tem certeza que deseja remover este serviço?</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowDeleteConfirm(false)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="danger"
+            onClick={async () => {
+              if (selectedId) {
+                setLoading(true);
+                try {
+                  await fetch(
+                    `http://localhost:8000/clinica/servicos/deletar/${selectedId}`,
+                    {
+                      method: "DELETE",
+                    }
+                  );
+                  fetchServicos();
+                } catch (error) {
+                  console.error("Erro ao remover médico:", error);
+                } finally {
+                  setLoading(false);
+                }
+              }
+              setShowDeleteConfirm(false);
+            }}
+          >
+            Excluir
           </Button>
         </Modal.Footer>
       </Modal>

@@ -28,6 +28,8 @@ export const Equipe = () => {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Medico | null>(null);
   const [editEquipe, setEditEquipe] = useState<number | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [novoMedico, setNovoMedico] = useState<Medico>({
     id: 0,
     name: "",
@@ -100,19 +102,9 @@ export const Equipe = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm("Tem certeza que deseja remover este médico?")) return;
-    setLoading(true);
-    try {
-      await fetch(`http://localhost:8000/clinica/medicos/deletar/${id}`, {
-        method: "DELETE",
-      });
-      fetchMedicos();
-    } catch (error) {
-      console.error("Erro ao remover médico:", error);
-    } finally {
-      setLoading(false);
-    }
+  const handleDelete = (id: number) => {
+    setSelectedId(id);
+    setShowDeleteConfirm(true);
   };
 
   const getPreviewSrc = (foto: Blob | string | undefined) => {
@@ -181,29 +173,29 @@ export const Equipe = () => {
                   <Card.Subtitle>CRM: {medico.crm}</Card.Subtitle>
                   <Card.Text className="text-muted">
                     {medico.descricao}
+                    {editEquipe === medico.id && (
+                      <div className="position-absolute top-0 end-0 m-2">
+                        <Button
+                          className="me-2"
+                          variant="warning"
+                          onClick={() => {
+                            setEditing(medico);
+                            setNovoMedico(medico);
+                            setShowModal(true);
+                          }}
+                        >
+                          ✏️ Editar
+                        </Button>
+                        <Button
+                          className="ms-2"
+                          variant="danger"
+                          onClick={() => handleDelete(medico.id)}
+                        >
+                          🗑️ Excluir
+                        </Button>
+                      </div>
+                    )}
                   </Card.Text>
-                  {editEquipe === medico.id && (
-                    <div className="position-absolute top-0 end-0 m-2">
-                      <Button
-                        className="me-2"
-                        variant="warning"
-                        onClick={() => {
-                          setEditing(medico);
-                          setNovoMedico(medico);
-                          setShowModal(true);
-                        }}
-                      >
-                        ✏️ Editar
-                      </Button>
-                      <Button
-                        className="ms-2"
-                        variant="danger"
-                        onClick={() => handleDelete(medico.id)}
-                      >
-                        🗑️ Excluir
-                      </Button>
-                    </div>
-                  )}
                 </Card.Body>
               </Card>
             </Col>
@@ -302,6 +294,50 @@ export const Equipe = () => {
             disabled={!isValidMedico(novoMedico) || loading}
           >
             {editing ? "Salvar" : "Adicionar"}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal
+        show={showDeleteConfirm}
+        onHide={() => setShowDeleteConfirm(false)}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Confirmar Exclusão</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>Tem certeza que deseja remover este médico?</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowDeleteConfirm(false)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="danger"
+            onClick={async () => {
+              if (selectedId) {
+                setLoading(true);
+                try {
+                  await fetch(
+                    `http://localhost:8000/clinica/medicos/deletar/${selectedId}`,
+                    {
+                      method: "DELETE",
+                    }
+                  );
+                  fetchMedicos();
+                } catch (error) {
+                  console.error("Erro ao remover médico:", error);
+                } finally {
+                  setLoading(false);
+                }
+              }
+              setShowDeleteConfirm(false);
+            }}
+          >
+            Excluir
           </Button>
         </Modal.Footer>
       </Modal>

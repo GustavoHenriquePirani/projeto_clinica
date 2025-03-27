@@ -8,11 +8,10 @@ import {
   Spinner,
   Alert,
 } from "react-bootstrap";
-// import bcrypt from "bcryptjs";
-import { Link } from "react-router-dom";
 import "../../pages/global.css";
 
-export const Login = () => {
+export const Register = () => {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -27,47 +26,45 @@ export const Login = () => {
     setMessage(null);
 
     try {
-      if (!email || !password) {
+      if (!name || !email || !password) {
         setMessage({
           type: "danger",
-          text: "E-mail e senha são obrigatórios.",
+          text: "Todos os campos são obrigatórios.",
         });
         setLoading(false);
         return;
       }
 
-      const response = await fetch(`http://localhost:3000/user/login`, {
+      const response = await fetch("http://localhost:8000/user/criar", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ name, email, password }),
       });
 
-      console.log("Status da resposta:", response.status);
-      let data;
-      try {
-        data = await response.json();
-      } catch (e) {
-        console.error("Erro ao converter resposta em JSON:", e);
-        throw new Error("Resposta inesperada do servidor.");
-      }
+      const data = await response.json();
 
       if (!response.ok) {
         setMessage({
           type: "danger",
-          text: data.message || "Erro ao realizar login.",
+          text: data.message || "Erro ao cadastrar usuário.",
         });
-        setLoading(false);
-        return;
+      } else {
+        setMessage({
+          type: "success",
+          text: "Usuário cadastrado com sucesso!",
+        });
+        setName("");
+        setEmail("");
+        setPassword("");
       }
-
-      setMessage({ type: "success", text: "Login realizado com sucesso!" });
     } catch (error) {
-      console.error("Erro ao realizar login:", error);
+      console.error("Erro ao cadastrar usuário:", error);
       setMessage({
         type: "danger",
-        text: "Erro ao realizar login. Tente novamente.",
+        text: "Erro ao cadastrar usuário. Tente novamente.",
       });
     } finally {
       setLoading(false);
@@ -78,11 +75,22 @@ export const Login = () => {
     <Container fluid className="container mt-4 ps-4 pe-4">
       <Row className="justify-content-center">
         <Col md={6}>
-          <h2 className="text-center">Login</h2>
+          <h2 className="text-center">Cadastro de Usuário</h2>
 
           {message && <Alert variant={message.type}>{message.text}</Alert>}
 
           <Form onSubmit={handleSubmit}>
+            <Form.Group className="mb-3">
+              <Form.Label>Nome</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Digite seu nome"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </Form.Group>
+
             <Form.Group className="mb-3">
               <Form.Label>E-mail</Form.Label>
               <Form.Control
@@ -105,34 +113,14 @@ export const Login = () => {
               />
             </Form.Group>
 
-            <div className="d-flex flex-column align-items-center mt-5">
-              <Button
-                variant="primary"
-                type="submit"
-                className="w-50"
-                disabled={loading}
-              >
-                {loading ? <Spinner animation="border" size="sm" /> : "Entrar"}
-              </Button>
-
-              <Link
-                to="/register"
-                className="w-50 mt-4 d-flex justify-content-center"
-              >
-                <Button
-                  variant="primary"
-                  type="button"
-                  className="w-100"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <Spinner animation="border" size="sm" />
-                  ) : (
-                    "Cadastrar"
-                  )}
-                </Button>
-              </Link>
-            </div>
+            <Button
+              variant="success"
+              type="submit"
+              className="w-100 mt-4"
+              disabled={loading}
+            >
+              {loading ? <Spinner animation="border" size="sm" /> : "Cadastrar"}
+            </Button>
           </Form>
         </Col>
       </Row>

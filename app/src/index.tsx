@@ -5,8 +5,9 @@ import "./index.css";
 // import App from './App';
 import { CustomNavbar } from "./components/navbar/index";
 import { Servicos } from "./pages/servicos/servicos";
-// import { Login } from "./pages/login/login";
+import { Login } from "./pages/login/login";
 import { Equipe } from "./pages/equipe/equipe";
+import { Register } from "./pages/usuario/register";
 import { Home } from "./pages/home/home";
 
 import reportWebVitals from "./reportWebVitals";
@@ -23,7 +24,8 @@ root.render(
         <Route path="/" element={<Home />} />
         <Route path="/servicos" element={<Servicos />} />
         <Route path="/equipe" element={<Equipe />} />
-        {/* <Route path="/login" element={<Login />} /> */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         {/* <App /> */}
       </Routes>
     </Router>
