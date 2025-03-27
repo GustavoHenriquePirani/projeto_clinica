@@ -10,11 +10,11 @@ import {
 
 const router = Router();
 
-router.get("/user", findAllUser);
-router.get("/user/:id", findUserById);
+router.get("/user/listar", findAllUser);
+router.get("/user/listar/:id", findUserById);
 router.post("/user/login", loginUser);
 router.post("/user/criar", createUser);
-router.put("/user/:id", updateUser);
-router.delete("/user/:id", deleteUser);
+router.put("/user/editar/:id", updateUser);
+router.delete("/user/deletar/:id", deleteUser);
 
 export default router;

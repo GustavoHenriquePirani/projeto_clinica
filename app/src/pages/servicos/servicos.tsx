@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode";
 import {
   Container,
   Row,
@@ -23,6 +24,7 @@ interface Servico {
 export const Servicos = () => {
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Servico | null>(null);
   const [editService, setEditService] = useState<number | null>(null);
@@ -38,7 +40,23 @@ export const Servicos = () => {
 
   useEffect(() => {
     fetchServicos();
+    verificarAdmin();
   }, []);
+
+  // Função para verificar se o usuário logado é admin
+  const verificarAdmin = () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded: any = jwtDecode(token);
+        if (decoded.email === "admin@admin") {
+          setIsAdmin(true);
+        }
+      } catch (error) {
+        console.error("Erro ao decodificar token:", error);
+      }
+    }
+  };
 
   const fetchServicos = async () => {
     try {
@@ -97,30 +115,6 @@ export const Servicos = () => {
     }
   };
 
-  // const handleDelete = async (id: number) => {
-  //   if (!window.confirm("Tem certeza que deseja excluir este serviço?")) return;
-
-  //   setLoading(true);
-  //   try {
-  //     const response = await fetch(
-  //       `http://localhost:8000/clinica/servicos/deletar/${id}`,
-  //       {
-  //         method: "DELETE",
-  //       }
-  //     );
-
-  //     if (response.ok) {
-  //       setServicos((prev) => prev.filter((servico) => servico.id !== id));
-  //     } else {
-  //       console.error("Erro ao excluir serviço.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Erro ao excluir serviço:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const handleDelete = (id: number) => {
     setSelectedId(id);
     setShowDeleteConfirm(true);
@@ -143,23 +137,25 @@ export const Servicos = () => {
         </Col>
       </Row>
 
-      <Button
-        variant="success"
-        className="mb-3"
-        onClick={() => {
-          setShowModal(true);
-          setEditing(null);
-          setNovoServico({
-            id: 0,
-            name: "",
-            descricao: "",
-            valor: 0,
-            categoria: "",
-          });
-        }}
-      >
-        Adicionar Serviço
-      </Button>
+      {isAdmin && (
+        <Button
+          variant="success"
+          className="mb-3"
+          onClick={() => {
+            setShowModal(true);
+            setEditing(null);
+            setNovoServico({
+              id: 0,
+              name: "",
+              descricao: "",
+              valor: 0,
+              categoria: "",
+            });
+          }}
+        >
+          Adicionar Serviço
+        </Button>
+      )}
 
       {loading ? (
         <div className="text-center">
@@ -189,8 +185,9 @@ export const Servicos = () => {
                       <strong>Valor:</strong> R$ {servico.valor.toFixed(2)}
                     </p>
                   </div>
+
                   <div className="button-container">
-                    {editService === servico.id && (
+                    {isAdmin && editService === servico.id && (
                       <div className="position-absolute top-0 end-0 m-2">
                         <Button
                           variant="warning"
@@ -326,7 +323,7 @@ export const Servicos = () => {
                   );
                   fetchServicos();
                 } catch (error) {
-                  console.error("Erro ao remover médico:", error);
+                  console.error("Erro ao remover serviço:", error);
                 } finally {
                   setLoading(false);
                 }

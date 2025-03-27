@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import User from "./userModel";
 
 export const createUser = async (
@@ -52,30 +53,6 @@ export const findUserById = async (
   }
 };
 
-export const loginUser = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      res.status(400).json({ message: "E-mail e senha são obrigatórios." });
-      return;
-    }
-    const user = await User.findOne({ where: { email } });
-    if (!user) {
-      res.status(404).json({ message: "E-mail não encontrado." });
-      return;
-    }
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      res.status(401).json({ message: "Senha incorreta." });
-      return;
-    }
-    res.status(200).json({ message: "Login realizado com sucesso!" });
-  } catch (error) {
-    console.error("Erro ao processar login:", error);
-    res.status(500).json({ message: "Erro ao processar login.", error });
-  }
-};
-
 export const updateUser = async (
   req: Request,
   res: Response
@@ -118,5 +95,45 @@ export const deleteUser = async (
     res.status(204).send();
   } catch (error) {
     res.status(500).json({ message: "Erro ao excluir médico", error });
+  }
+};
+
+export const loginUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      res.status(400).json({ message: "E-mail e senha são obrigatórios." });
+      return;
+    }
+
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      res.status(401).json({ message: "Credenciais inválidas." });
+      return;
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      res.status(401).json({ message: "Credenciais inválidas." });
+      return;
+    }
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET || "secret",
+      { expiresIn: "1h" }
+    );
+
+    res.status(200).json({
+      message: "Login realizado com sucesso!",
+      token,
+      user: { id: user.id, name: user.name, email: user.email },
+    });
+  } catch (error) {
+    console.error("Erro ao processar login:", error);
+    res.status(500).json({ message: "Erro ao processar login." });
   }
 };
