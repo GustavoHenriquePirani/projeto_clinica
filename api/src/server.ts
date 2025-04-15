@@ -8,26 +8,27 @@ import { sequelize } from "./config/connection";
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.get("/clinica", (req, res) => {
-  res.send("Bem-vindo à clínica!");
-});
 
 const startServer = async () => {
   try {
     await sequelize.authenticate();
     console.log("Conexão com o banco de dados estabelecida com sucesso!");
 
-    await sequelize.sync();
+    await sequelize.sync({ alter: true });
 
     app.use("/clinica", medicoRoutes);
     app.use("/clinica", servicosRoutes);
     app.use("/clinica", userRoutes);
 
-
-    const PORT = 8000;
+    const PORT = process.env.PORT || 8000;
     app.listen(PORT, () => {
       console.log(`Servidor rodando na porta ${PORT}`);
     });
