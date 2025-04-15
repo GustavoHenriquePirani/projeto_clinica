@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { jwtDecode } from "jwt-decode";
+import { useAuth } from "../login/AuthContext";
 import {
   Container,
   Row,
@@ -24,7 +24,6 @@ interface Servico {
 export const Servicos = () => {
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Servico | null>(null);
   const [editService, setEditService] = useState<number | null>(null);
@@ -38,31 +37,21 @@ export const Servicos = () => {
     categoria: "",
   });
 
+  const { isAuthenticated, isAdmin } = useAuth();
+
   useEffect(() => {
     fetchServicos();
-    verificarAdmin();
   }, []);
 
-  // Função para verificar se o usuário logado é admin
-  const verificarAdmin = () => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const decoded: any = jwtDecode(token);
-        if (decoded.email === "admin@admin") {
-          setIsAdmin(true);
-        }
-      } catch (error) {
-        console.error("Erro ao decodificar token:", error);
-      }
-    }
-  };
-
   const fetchServicos = async () => {
+    setLoading(true);
     try {
       const response = await fetch(
         "http://localhost:8000/clinica/servicos/listar"
       );
+      if (!response.ok) {
+        throw new Error("Erro ao buscar serviços");
+      }
       const data = await response.json();
       setServicos(data);
     } catch (error) {
@@ -81,33 +70,30 @@ export const Servicos = () => {
       ? `http://localhost:8000/clinica/servicos/editar/${editing.id}`
       : "http://localhost:8000/clinica/servicos/criar";
 
-    const formData = new FormData();
-    formData.append("name", novoServico.name);
-    formData.append("descricao", novoServico.descricao);
-    formData.append("valor", novoServico.valor.toFixed(2));
-    formData.append("categoria", novoServico.categoria);
-
     try {
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(novoServico),
+        body: JSON.stringify({
+          ...novoServico,
+          valor: parseFloat(novoServico.valor.toString()),
+        }),
       });
 
-      if (response.ok) {
-        const updatedServico = await response.json();
-        setServicos((prev) =>
-          editing
-            ? prev.map((servico) =>
-                servico.id === updatedServico.id ? updatedServico : servico
-              )
-            : [...prev, updatedServico]
-        );
-        setShowModal(false);
-        setEditing(null);
-      } else {
-        console.error("Erro ao salvar serviço.");
+      if (!response.ok) {
+        throw new Error("Erro ao salvar serviço");
       }
+
+      const updatedServico = await response.json();
+      setServicos((prev) =>
+        editing
+          ? prev.map((servico) =>
+              servico.id === updatedServico.id ? updatedServico : servico
+            )
+          : [...prev, updatedServico]
+      );
+      setShowModal(false);
+      setEditing(null);
     } catch (error) {
       console.error("Erro ao salvar serviço:", error);
     } finally {
@@ -115,9 +101,35 @@ export const Servicos = () => {
     }
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     setSelectedId(id);
     setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedId) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `http://localhost:8000/clinica/servicos/deletar/${selectedId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Erro ao excluir serviço");
+      }
+
+      setServicos(servicos.filter((servico) => servico.id !== selectedId));
+    } catch (error) {
+      console.error("Erro ao excluir serviço:", error);
+    } finally {
+      setLoading(false);
+      setShowDeleteConfirm(false);
+      setSelectedId(null);
+    }
   };
 
   const isValidServico = (servico: Servico) => {
@@ -137,7 +149,7 @@ export const Servicos = () => {
         </Col>
       </Row>
 
-      {isAdmin && (
+      {isAuthenticated && isAdmin && (
         <Button
           variant="success"
           className="mb-3"
@@ -187,28 +199,34 @@ export const Servicos = () => {
                   </div>
 
                   <div className="button-container">
-                    {isAdmin && editService === servico.id && (
-                      <div className="position-absolute top-0 end-0 m-2">
-                        <Button
-                          variant="warning"
-                          size="sm"
-                          onClick={() => {
-                            setEditing(servico);
-                            setNovoServico(servico);
-                            setShowModal(true);
-                          }}
-                        >
-                          ✏️ Editar
-                        </Button>{" "}
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={() => handleDelete(servico.id)}
-                        >
-                          🗑️ Excluir
-                        </Button>
-                      </div>
-                    )}
+                    {isAuthenticated &&
+                      isAdmin &&
+                      editService === servico.id && (
+                        <div className="position-absolute top-0 end-0 m-2">
+                          <Button
+                            variant="warning"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditing(servico);
+                              setNovoServico(servico);
+                              setShowModal(true);
+                            }}
+                          >
+                            ✏️ Editar
+                          </Button>{" "}
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(servico.id);
+                            }}
+                          >
+                            🗑️ Excluir
+                          </Button>
+                        </div>
+                      )}
                     <Button variant="primary">Agendar</Button>
                   </div>
                 </Card.Body>
@@ -234,6 +252,7 @@ export const Servicos = () => {
                 onChange={(e) =>
                   setNovoServico({ ...novoServico, name: e.target.value })
                 }
+                required
               />
               <span className="obrigatorio">Campo obrigatório*</span>
             </Form.Group>
@@ -246,6 +265,7 @@ export const Servicos = () => {
                 onChange={(e) =>
                   setNovoServico({ ...novoServico, descricao: e.target.value })
                 }
+                required
               />
               <span className="obrigatorio">Campo obrigatório*</span>
             </Form.Group>
@@ -254,13 +274,16 @@ export const Servicos = () => {
               <Form.Label>Valor</Form.Label>
               <Form.Control
                 type="number"
+                min="0"
+                step="0.01"
                 value={novoServico.valor}
                 onChange={(e) =>
                   setNovoServico({
                     ...novoServico,
-                    valor: parseFloat(e.target.value),
+                    valor: parseFloat(e.target.value) || 0,
                   })
                 }
+                required
               />
               <span className="obrigatorio">Campo obrigatório*</span>
             </Form.Group>
@@ -273,6 +296,7 @@ export const Servicos = () => {
                 onChange={(e) =>
                   setNovoServico({ ...novoServico, categoria: e.target.value })
                 }
+                required
               />
               <span className="obrigatorio">Campo obrigatório*</span>
             </Form.Group>
@@ -287,7 +311,13 @@ export const Servicos = () => {
             onClick={handleSave}
             disabled={!isValidServico(novoServico) || loading}
           >
-            Salvar
+            {loading ? (
+              <Spinner animation="border" size="sm" />
+            ) : editing ? (
+              "Salvar"
+            ) : (
+              "Adicionar"
+            )}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -306,32 +336,12 @@ export const Servicos = () => {
           <Button
             variant="secondary"
             onClick={() => setShowDeleteConfirm(false)}
+            disabled={loading}
           >
             Cancelar
           </Button>
-          <Button
-            variant="danger"
-            onClick={async () => {
-              if (selectedId) {
-                setLoading(true);
-                try {
-                  await fetch(
-                    `http://localhost:8000/clinica/servicos/deletar/${selectedId}`,
-                    {
-                      method: "DELETE",
-                    }
-                  );
-                  fetchServicos();
-                } catch (error) {
-                  console.error("Erro ao remover serviço:", error);
-                } finally {
-                  setLoading(false);
-                }
-              }
-              setShowDeleteConfirm(false);
-            }}
-          >
-            Excluir
+          <Button variant="danger" onClick={confirmDelete} disabled={loading}>
+            {loading ? <Spinner animation="border" size="sm" /> : "Excluir"}
           </Button>
         </Modal.Footer>
       </Modal>

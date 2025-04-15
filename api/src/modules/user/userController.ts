@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "./userModel";
+import "dotenv/config";
 
 export const createUser = async (
   req: Request,
@@ -122,7 +123,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     }
 
     const token = jwt.sign(
-      { id: user.id, email: user.email },
+      { id: user.id, email: user.email, admin: user.admin },
       process.env.JWT_SECRET || "secret",
       { expiresIn: "1h" }
     );
@@ -130,7 +131,12 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     res.status(200).json({
       message: "Login realizado com sucesso!",
       token,
-      user: { id: user.id, name: user.name, email: user.email },
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        admin: user.admin,
+      },
     });
   } catch (error) {
     console.error("Erro ao processar login:", error);

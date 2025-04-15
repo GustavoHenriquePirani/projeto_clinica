@@ -7,8 +7,10 @@ import {
   Button,
   Spinner,
   Alert,
+  Badge,
 } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthContext";
 import "../../pages/global.css";
 
 export const Login = () => {
@@ -20,15 +22,14 @@ export const Login = () => {
     text: string;
   } | null>(null);
   const navigate = useNavigate();
+  const { login, isAuthenticated, isAdmin, logout, user } = useAuth();
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedEmail = localStorage.getItem("email");
-    if (storedToken && storedEmail) {
-      setEmail(storedEmail);
-      setPassword("Você está logado");
+    if (isAuthenticated && user) {
+      setEmail(user.email);
+      setPassword("********");
     }
-  }, []);
+  }, [isAuthenticated, user]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -62,9 +63,20 @@ export const Login = () => {
         return;
       }
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("email", email);
-      setMessage({ type: "success", text: "Login realizado com sucesso!" });
+      login(data.token, {
+        id: data.user.id,
+        name: data.user.name,
+        email: data.user.email,
+        admin: data.user.admin,
+      });
+
+      setMessage({
+        type: "success",
+        text: `Login realizado com sucesso! ${
+          data.user.admin ? "(Admin)" : ""
+        }`,
+      });
+
       setTimeout(() => navigate("/"), 1000);
     } catch (error) {
       setMessage({
@@ -77,8 +89,7 @@ export const Login = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("email");
+    logout();
     setEmail("");
     setPassword("");
     setMessage({ type: "success", text: "Você saiu do sistema." });
@@ -89,6 +100,12 @@ export const Login = () => {
       <Row className="justify-content-center">
         <Col md={6}>
           <h2 className="text-center">Login</h2>
+
+          {isAuthenticated && isAdmin && (
+            <Alert variant="warning" className="text-center">
+              <Badge bg="danger">ADMIN</Badge> Modo administrador ativo
+            </Alert>
+          )}
 
           {message && <Alert variant={message.type}>{message.text}</Alert>}
 
@@ -101,7 +118,7 @@ export const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                disabled={password === "Você está logado"}
+                disabled={isAuthenticated}
               />
             </Form.Group>
 
@@ -113,38 +130,54 @@ export const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                disabled={password === "Você está logado"}
+                disabled={isAuthenticated}
               />
             </Form.Group>
 
             <div className="d-flex flex-column align-items-center mt-5">
-              <Button
-                variant="success"
-                type="submit"
-                className="w-50"
-                disabled={loading || password === "Você está logado"}
-              >
-                {loading ? <Spinner animation="border" size="sm" /> : "Entrar"}
-              </Button>
+              {!isAuthenticated ? (
+                <>
+                  <Button
+                    variant="success"
+                    type="submit"
+                    className="w-50"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <Spinner animation="border" size="sm" />
+                    ) : (
+                      "Entrar"
+                    )}
+                  </Button>
 
-              {localStorage.getItem("token") && (
-                <Button
-                  variant="danger"
-                  className="w-50 mt-3"
-                  onClick={handleLogout}
-                >
-                  Logout
-                </Button>
+                  <Link
+                    to="/register"
+                    className="w-50 mt-4 d-flex justify-content-center"
+                  >
+                    <Button variant="primary" type="button" className="w-100">
+                      Cadastrar
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant="danger"
+                    className="w-50"
+                    onClick={handleLogout}
+                  >
+                    Sair
+                  </Button>
+
+                  <Button
+                    variant="secondary"
+                    className="w-50 mt-3"
+                    onClick={() => navigate("/")}
+                  >
+                    Ir para Página Inicial
+                  </Button>
+                </>
               )}
-
-              <Link
-                to="/register"
-                className="w-50 mt-4 d-flex justify-content-center"
-              >
-                <Button variant="primary" type="button" className="w-100">
-                  Cadastrar
-                </Button>
-              </Link>
             </div>
           </Form>
         </Col>

@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { jwtDecode } from "jwt-decode";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Row,
@@ -10,6 +9,7 @@ import {
   Form,
   Spinner,
 } from "react-bootstrap";
+import { useAuth } from "../login/AuthContext";
 import "../../pages/global.css";
 import "./equipe.css";
 
@@ -27,7 +27,6 @@ export const Equipe = () => {
   const [imagens, setImagens] = useState<{ [key: number]: string }>({});
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false); // Estado para verificar se é admin
   const [editing, setEditing] = useState<Medico | null>(null);
   const [editEquipe, setEditEquipe] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -40,25 +39,11 @@ export const Equipe = () => {
     descricao: "",
   });
 
+  const { isAuthenticated, isAdmin } = useAuth();
+
   useEffect(() => {
     fetchMedicos();
-    verificarAdmin();
   }, []);
-
-  // Função para verificar se o usuário logado é admin
-  const verificarAdmin = () => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const decoded: any = jwtDecode(token);
-        if (decoded.email === "admin@admin") {
-          setIsAdmin(true);
-        }
-      } catch (error) {
-        console.error("Erro ao decodificar token:", error);
-      }
-    }
-  };
 
   const fetchMedicos = async () => {
     setLoading(true);
@@ -107,10 +92,15 @@ export const Equipe = () => {
     }
 
     try {
-      await fetch(url, {
+      const response = await fetch(url, {
         method,
         body: formData,
       });
+
+      if (!response.ok) {
+        throw new Error("Erro ao salvar médico");
+      }
+
       fetchMedicos();
       setShowModal(false);
     } catch (error) {
@@ -156,7 +146,7 @@ export const Equipe = () => {
         </Col>
       </Row>
 
-      {isAdmin && (
+      {isAuthenticated && isAdmin && (
         <Button
           variant="success"
           onClick={() => {
@@ -199,12 +189,13 @@ export const Equipe = () => {
                   <Card.Subtitle>CRM: {medico.crm}</Card.Subtitle>
                   <Card.Text className="text-muted">
                     {medico.descricao}
-                    {isAdmin && editEquipe === medico.id && (
+                    {isAuthenticated && isAdmin && editEquipe === medico.id && (
                       <div className="position-absolute top-0 end-0 m-2">
                         <Button
                           className="me-2"
                           variant="warning"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setEditing(medico);
                             setNovoMedico(medico);
                             setShowModal(true);
@@ -215,7 +206,10 @@ export const Equipe = () => {
                         <Button
                           className="ms-2"
                           variant="danger"
-                          onClick={() => handleDelete(medico.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(medico.id);
+                          }}
                         >
                           🗑️ Excluir
                         </Button>
@@ -319,7 +313,13 @@ export const Equipe = () => {
             onClick={handleSave}
             disabled={!isValidMedico(novoMedico) || loading}
           >
-            {editing ? "Salvar" : "Adicionar"}
+            {loading ? (
+              <Spinner animation="border" size="sm" />
+            ) : editing ? (
+              "Salvar"
+            ) : (
+              "Adicionar"
+            )}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -347,12 +347,17 @@ export const Equipe = () => {
               if (selectedId) {
                 setLoading(true);
                 try {
-                  await fetch(
+                  const response = await fetch(
                     `http://localhost:8000/clinica/medicos/deletar/${selectedId}`,
                     {
                       method: "DELETE",
                     }
                   );
+
+                  if (!response.ok) {
+                    throw new Error("Erro ao remover médico");
+                  }
+
                   fetchMedicos();
                 } catch (error) {
                   console.error("Erro ao remover médico:", error);
@@ -362,8 +367,9 @@ export const Equipe = () => {
               }
               setShowDeleteConfirm(false);
             }}
+            disabled={loading}
           >
-            Excluir
+            {loading ? <Spinner animation="border" size="sm" /> : "Excluir"}
           </Button>
         </Modal.Footer>
       </Modal>
