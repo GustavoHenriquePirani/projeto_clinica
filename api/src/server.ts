@@ -8,9 +8,19 @@ import { sequelize } from "./config/connection";
 
 const app = express();
 
+const allowedOrigins = [process.env.FRONTEND_URL, "http://localhost:3000"];
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Bloqueado por CORS"));
+      }
+    },
     credentials: true,
   })
 );
