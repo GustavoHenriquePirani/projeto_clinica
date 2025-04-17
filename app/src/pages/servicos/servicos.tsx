@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../login/AuthContext";
 import {
   Container,
@@ -38,19 +38,14 @@ export const Servicos = () => {
   });
 
   const { isAuthenticated, isAdmin } = useAuth();
+  const baseURL = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
-  useEffect(() => {
-    fetchServicos();
-  }, []);
-
-  const fetchServicos = async () => {
+  const fetchServicos = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        "http://localhost:8000/clinica/servicos/listar"
-      );
+      const response = await fetch(`${baseURL}/clinica/servicos/listar`);
       if (!response.ok) {
-        throw new Error("Erro ao buscar serviços");
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
       setServicos(data);
@@ -59,7 +54,11 @@ export const Servicos = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [baseURL]);
+
+  useEffect(() => {
+    fetchServicos();
+  }, [fetchServicos]);
 
   const handleSave = async () => {
     if (!isValidServico(novoServico)) return;
@@ -67,8 +66,8 @@ export const Servicos = () => {
     setLoading(true);
     const method = editing ? "PUT" : "POST";
     const url = editing
-      ? `http://localhost:8000/clinica/servicos/editar/${editing.id}`
-      : "http://localhost:8000/clinica/servicos/criar";
+      ? `${baseURL}/clinica/servicos/editar/${editing.id}`
+      : `${baseURL}/clinica/servicos/criar`;
 
     try {
       const response = await fetch(url, {
@@ -81,7 +80,7 @@ export const Servicos = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao salvar serviço");
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const updatedServico = await response.json();
@@ -112,14 +111,14 @@ export const Servicos = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:8000/clinica/servicos/deletar/${selectedId}`,
+        `${baseURL}/clinica/servicos/deletar/${selectedId}`,
         {
           method: "DELETE",
         }
       );
 
       if (!response.ok) {
-        throw new Error("Erro ao excluir serviço");
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       setServicos(servicos.filter((servico) => servico.id !== selectedId));

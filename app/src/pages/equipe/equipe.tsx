@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Container,
   Row,
@@ -40,17 +40,15 @@ export const Equipe = () => {
   });
 
   const { isAuthenticated, isAdmin } = useAuth();
+  const baseURL = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
-  useEffect(() => {
-    fetchMedicos();
-  }, []);
-
-  const fetchMedicos = async () => {
+  const fetchMedicos = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        "http://localhost:8000/clinica/medicos/listar"
-      );
+      const response = await fetch(`${baseURL}/clinica/medicos/listar`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
       setMedicos(data);
       const novasImagens: { [key: number]: string } = {};
@@ -58,7 +56,7 @@ export const Equipe = () => {
       await Promise.all(
         data.map(async (medico: Medico) => {
           const imagemResponse = await fetch(
-            `http://localhost:8000/clinica/medicos/${medico.id}/foto`
+            `${baseURL}/clinica/medicos/${medico.id}/foto`
           );
           if (imagemResponse.ok) {
             const blob = await imagemResponse.blob();
@@ -72,15 +70,19 @@ export const Equipe = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [baseURL]);
+
+  useEffect(() => {
+    fetchMedicos();
+  }, [fetchMedicos]);
 
   const handleSave = async () => {
     if (!isValidMedico(novoMedico)) return;
     setLoading(true);
     const method = editing ? "PUT" : "POST";
     const url = editing
-      ? `http://localhost:8000/clinica/medicos/editar/${editing.id}`
-      : "http://localhost:8000/clinica/medicos/criar";
+      ? `${baseURL}/clinica/medicos/editar/${editing.id}`
+      : `${baseURL}/clinica/medicos/criar`;
 
     const formData = new FormData();
     formData.append("name", novoMedico.name);
@@ -88,7 +90,7 @@ export const Equipe = () => {
     formData.append("email", novoMedico.email);
     formData.append("descricao", novoMedico.descricao);
     if (novoMedico.fotoPerfil) {
-      formData.append("fotoPerfil", novoMedico.fotoPerfil as Blob);
+      formData.append("fotoPerfil", novoMedico.fotoPerfil);
     }
 
     try {
@@ -98,10 +100,10 @@ export const Equipe = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao salvar médico");
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      fetchMedicos();
+      await fetchMedicos();
       setShowModal(false);
     } catch (error) {
       console.error("Erro ao salvar médico:", error);
@@ -115,12 +117,37 @@ export const Equipe = () => {
     setShowDeleteConfirm(true);
   };
 
+  const confirmDelete = async () => {
+    if (!selectedId) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${baseURL}/clinica/medicos/deletar/${selectedId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      await fetchMedicos();
+    } catch (error) {
+      console.error("Erro ao remover médico:", error);
+    } finally {
+      setLoading(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
   const getPreviewSrc = (foto: Blob | string | undefined) => {
     if (!foto) return "";
     if (typeof foto === "string") return foto;
-    if (typeof (foto as Blob).size === "number") {
+    if (foto instanceof Blob) {
       try {
-        return URL.createObjectURL(foto as Blob);
+        return URL.createObjectURL(foto);
       } catch (error) {
         console.error("Erro ao criar URL para blob:", error);
         return "";
@@ -131,10 +158,10 @@ export const Equipe = () => {
 
   const isValidMedico = (medico: Medico) => {
     return (
-      novoMedico.name.trim() !== "" &&
-      novoMedico.crm.trim() !== "" &&
-      novoMedico.email.trim() !== "" &&
-      novoMedico.descricao.trim() !== ""
+      medico.name.trim() !== "" &&
+      medico.crm.trim() !== "" &&
+      medico.email.trim() !== "" &&
+      medico.descricao.trim() !== ""
     );
   };
 
@@ -338,37 +365,11 @@ export const Equipe = () => {
           <Button
             variant="secondary"
             onClick={() => setShowDeleteConfirm(false)}
+            disabled={loading}
           >
             Cancelar
           </Button>
-          <Button
-            variant="danger"
-            onClick={async () => {
-              if (selectedId) {
-                setLoading(true);
-                try {
-                  const response = await fetch(
-                    `http://localhost:8000/clinica/medicos/deletar/${selectedId}`,
-                    {
-                      method: "DELETE",
-                    }
-                  );
-
-                  if (!response.ok) {
-                    throw new Error("Erro ao remover médico");
-                  }
-
-                  fetchMedicos();
-                } catch (error) {
-                  console.error("Erro ao remover médico:", error);
-                } finally {
-                  setLoading(false);
-                }
-              }
-              setShowDeleteConfirm(false);
-            }}
-            disabled={loading}
-          >
+          <Button variant="danger" onClick={confirmDelete} disabled={loading}>
             {loading ? <Spinner animation="border" size="sm" /> : "Excluir"}
           </Button>
         </Modal.Footer>

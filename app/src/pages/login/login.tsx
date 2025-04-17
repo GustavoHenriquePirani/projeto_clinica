@@ -23,11 +23,12 @@ export const Login = () => {
   } | null>(null);
   const navigate = useNavigate();
   const { login, isAuthenticated, isAdmin, logout, user } = useAuth();
+  const baseURL = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
   useEffect(() => {
     if (isAuthenticated && user) {
       setEmail(user.email);
-      setPassword("********");
+      setPassword("");
     }
   }, [isAuthenticated, user]);
 
@@ -46,7 +47,7 @@ export const Login = () => {
         return;
       }
 
-      const response = await fetch("http://localhost:8000/clinica/user/login", {
+      const response = await fetch(`${baseURL}/clinica/user/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

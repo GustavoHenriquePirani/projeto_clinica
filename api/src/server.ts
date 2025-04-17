@@ -32,7 +32,7 @@ const startServer = async () => {
     await sequelize.authenticate();
     console.log("Conexão com o banco de dados estabelecida com sucesso!");
 
-    await sequelize.sync({ alter: true });
+    await sequelize.sync();
 
     app.use("/clinica", medicoRoutes);
     app.use("/clinica", servicosRoutes);
