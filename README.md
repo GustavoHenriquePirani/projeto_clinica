@@ -1,5 +1,8 @@
 Este projeto simula o site de uma clínica médica, com funcionalidades completas de front-end e back-end. Foi desenvolvido utilizando React com TypeScript no front-end, Node.js com TypeScript no back-end, e PostgreSQL como banco de dados relacional.
 
+https://github.com/user-attachments/assets/c51edcb1-0725-4bcc-a4cf-9184a30f8c46
+
+
 🔧 Tecnologias Utilizadas
 ### Front-end
 - React (com arquivos .tsx)
